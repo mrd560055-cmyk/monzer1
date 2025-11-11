@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>رغد — مفاجأة</title>
+  <style>
+    /* أساسيات */
+    html,body{height:100%;margin:0;padding:0;background:linear-gradient(180deg,#1b1f2b 0%, #341b3a 70%);font-family: "Segoe UI", Tahoma, Arial, sans-serif;direction:rtl}
+    .stage{position:relative;overflow:hidden;height:100vh;width:100vw;display:flex;align-items:center;justify-content:center;color:#fff}
+    /* النص المركزي */
+    .card{
+      position:relative;
+      z-index:10;
+      text-align:center;
+      padding:30px 24px;
+      backdrop-filter: blur(6px) saturate(120%);
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,0.06);
+      box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    }
+    h1{font-size:34px;margin:0 0 8px 0;letter-spacing:1px}
+    p{margin:0;font-size:18px;opacity:0.95}
+    .heart{display:inline-block;margin-right:8px;font-size:26px}
+    /* ورود متساقطة */
+    .rose{
+      position:absolute;
+      top:-120px;
+      width:48px;height:48px;
+      background-size:cover;
+      pointer-events:none;
+      transform-origin:center;
+      animation:fall linear forwards;
+      will-change:transform,opacity;
+    }
+    @keyframes fall{
+      0%{transform:translateY(-150px) rotate(0deg) scale(0.7);opacity:0}
+      10%{opacity:1}
+      100%{transform:translateY(120vh) rotate(720deg) scale(1.0);opacity:0.95}
+    }
+    /* زر التشغيل الترحيبي */
+    .play-overlay{
+      position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(11,11,11,0.55), rgba(10,10,10,0.75));z-index:50;
+      flex-direction:column;padding:20px;
+    }
+    .play-btn{
+      background:rgba(255,255,255,0.95);color:#111;border-radius:14px;padding:14px 22px;font-weight:700;font-size:18px;border:none;box-shadow:0 8px 30px rgba(0,0,0,0.5);
+    }
+    .small{color:rgba(255,255,255,0.8);margin-top:12px}
+    /* تأثير بسيط للنص */
+    .glow{
+      text-shadow:0 6px 24px rgba(255,20,85,0.12), 0 2px 6px rgba(0,0,0,0.6);
+    }
+    /* responsiveness */
+    @media(max-width:420px){
+      h1{font-size:26px}
+      .card{padding:18px}
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="card">
+      <h1 class="glow">رغد <span class="heart">❤️</span></h1>
+      <p style="font-size:20px;margin-top:8px">حبي للأبَد</p>
+    </div>
+  </div>
+
+  <!-- موسيقى (حط ملف music.mp3 في نفس المجلد أو غيّر المسار) -->
+  <audio id="bg-audio" loop preload="auto">
+    <source src="music.mp3" type="audio/mpeg">
+    متصفحك لا يدعم تشغيل الصوت.
+  </audio>
+
+  <!--Overlay للضغط لتمكين الصوت (ضروري على الآيفون)-->
+  <div id="overlay" class="play-overlay" role="button" aria-label="تشغيل المفاجأة" tabindex="0">
+    <button id="playBtn" class="play-btn">اضغط لبدء المفاجأة ✨</button>
+    <div class="small">اضغط مرة لتشغيل الموسيقى والورود</div>
+  </div>
+
+  <script>
+    // صور ورود صغيرة (يمكن استبدالها بروابط أخرى). هنا استخدمت بيانات URL للسهولة.
+    const roses = [
+      // small rose png data uris (for simplicity, using SVG inline rose)
+      `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g fill="none" stroke="none"><circle cx="32" cy="32" r="30" fill="%23ff2e6e" opacity="0.0"/></g><path d="M32 10c-3 0-7 4-7 9s4 9 7 9 7-4 7-9-4-9-7-9zm0 20c-6 0-12 4-12 9v5h24v-5c0-5-6-9-12-9z" fill="%23ff2e6e"/></svg>')}` 
+    ];
+
+    const stage = document.querySelector('.stage');
+    const overlay = document.getElementById('overlay');
+    const playBtn = document.getElementById('playBtn');
+    const audio = document.getElementById('bg-audio');
+
+    // توليد ورود بتواتر
+    function spawnRose() {
+      const r = document.createElement('div');
+      r.className = 'rose';
+      // اختيار صورة عشوائية
+      const src = roses[Math.floor(Math.random()*roses.length)];
+      r.style.backgroundImage = `url("${src}")`;
+      // موضع عشوائي عرضي
+      const left = Math.random() * 100;
+      r.style.left = left + 'vw';
+      // مدة عشوائية للحركة (بين 6 و 14 ثانية)
+      const dur = 6 + Math.random()*8;
+      r.style.animationDuration = dur + 's';
+      // تدرج حجم عشوائي
+      const size = 24 + Math.random()*56;
+      r.style.width = r.style.height = size + 'px';
+      // دوران ابتدائي عشوائي
+      r.style.transform = `translateY(-150px) rotate(${Math.random()*360}deg) scale(${0.7 + Math.random()*0.7})`;
+      stage.appendChild(r);
+      // إزالة بعد انتهاء الحركة
+      setTimeout(()=> r.remove(), (dur+0.5)*1000);
+    }
+
+    // تشغيل تسلسل الورود
+    let roseInterval = null;
+    function startRoses() {
+      // فور الانطلاق، أطلق دفعات متغيرة
+      if (roseInterval) clearInterval(roseInterval);
+      spawnRose();
+      roseInterval = setInterval(spawnRose, 600 + Math.random()*900); // تقريبياً كل 0.6-1.5s
+    }
+
+    // تفعيل الموسيقى والحركات بعد الضغط
+    function startEverything() {
+      // تشغيل الصوت (بعض المتصفحات تحتاج play() على حدث)
+      audio.play().catch(()=>{/* if blocked, nothing */});
+      // أنيمي الورود
+      startRoses();
+      // اختفاي الـ overlay
+      overlay.style.transition = 'opacity 0.6s';
+      overlay.style.opacity = '0';
+      setTimeout(()=> overlay.remove(), 700);
+    }
+
+    playBtn.addEventListener('click', startEverything);
+    overlay.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') startEverything(); });
+
+    // تحسين: لو المستخدم نقر في أي مكان على الشاشة أيضاً
+    document.addEventListener('click', function firstClick(e){
+      // لو overlay موجود ونقرت في أي مكان فوقها
+      if(document.body.contains(overlay)) {
+        // لكن نتأكد ما نكرر
+        if(e.target === overlay || e.target === playBtn) return;
+        // لا نفعل إلا لو الضغط جاي من شاشة (لتجنب حالات غير مقصودة)
+      }
+      // نحتفظ بالفنكشن إن أردت
+    }, {once:true});
+
+    // (اختياري) لو حاب تغير النص بسهولة من هنا:
+    // document.querySelector('h1').textContent = 'رغد';
+    // document.querySelector('.card p').textContent = 'حبي للأبد';
+
+  </script>
+</body>
+</html>
